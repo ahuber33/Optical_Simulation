@@ -1,0 +1,12 @@
+#/gun/particle e-
+/gun/particle gamma
+#/gun/particle geantino
+/gun/energy 1. MeV
+/gun/number 1
+#/gun/position -12.75 12.75 -19 cm
+#/gun/position 0 0. -2 cm
+/gun/position 0 0. -19 cm
+/gun/direction 0 0 1
+
+#/gun/position 0 -15.0 9. cm
+#/gun/direction 0.0 1.0 0.0

@@ -1,0 +1,18 @@
+/gps/List
+#/gps/particle e-
+/gps/particle ion
+/gps/ion 3 5  0
+/gps/number 1
+/gps/energy 1.0 MeV
+
+#plane source of electrons
+/gps/pos/type Plane
+/gps/pos/shape Circle
+#/gps/pos/centre 6.375 9.158 -13.0 cm
+/gps/pos/centre 0 0  -13.0 cm
+
+/gps/pos/radius 0.9 cm
+
+/gps/direction 0.0 0.0 1.0
+
+

@@ -1,0 +1,340 @@
+/// SN_OpticalSimEventAction.hh
+/// Author: Benton Pahlka <pahlka@physics.utexas.edu> 
+/// Copyright: 2010 (C) NEMO3/SuperNEMO - University of Texas at Austin
+
+#ifndef SN_OpticalSimEventAction_h
+#define SN_OpticalSimEventAction_h 1
+#include "G4ParticleGun.hh"
+#include "G4UserEventAction.hh"
+#include "TH1F.h"
+#include "TROOT.h"
+#include "TTree.h"
+#include "TBranch.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "CLHEP/Units/SystemOfUnits.h"
+#include <vector>
+#include "TVector.h"
+
+class G4Event;
+
+//gROOT->ProcessLine("#include <vector>");
+//a Tally is attached to each photon to store relevant statistics
+// struct Tally {
+//   float BirthX;
+//   float BirthY;
+//   float BirthZ;
+//   float BirthLambda;
+//   float DeathLambda;
+//   int   Reflections;//Number of Reflections before WL shifting
+//   int ReflectBeforeWLS;
+//   int ReflectAfterWLS;
+//   float Distance_in_Z;
+//   int WLSCount;
+//   float WLSZ;
+//   int   PMTnumber;
+//   float ExitAngle;
+//   float DeathX;
+//   float DeathY;
+//   float DeathZ;
+//   float Theta;
+
+//   float DistBefore;
+//   float DistAfter;
+//   float TotTrackLen;
+//   float TimeTransSc;
+//   float TimeEmissionScPTP;
+//   float TimeEmissionScPOPOP;
+//   float TimeEmissionSc;
+//   float TimeTotalSc;
+//   float TimeTransitPMT;
+//   float TimeTotal;
+//   int TotalInternalReflections;
+
+//   //  float BulkAbsDeathX;
+//   //  float BulkAbsDeathY;
+//   //  float BulkAbsDeathZ;
+
+//   //  float SurfAbsDeathX;
+//   //  float SurfAbsDeathY;
+//   //  float SurfAbsDeathZ;
+
+//   //  float TimeBefore;
+//   //  float TimeAfter;
+//   //  float TotalTOF;
+
+
+//   inline int operator ==(const Tally& right) const
+//     {return (this==&right);}
+// };
+
+
+
+//This struct carries statistics for the whole Run
+struct RunTally {
+  float  IncidentE;
+  float  Deposit;
+  int    Generated;
+  int    Absorbed;
+  int    BulkAbs;
+  int    Escaped;
+  int    Failed;
+  int    Detected_without_CU;
+  int    Lost;
+  int    WLS;
+  int    Detected;
+  float  FWHM;
+  float  FWHM_final;
+  float  Frac_Detected;
+  float  Frac_Transmitted;
+  float Total_Track_Length_e;
+  float Depth_Max;
+  int Count_Scintillation;
+  int Count_Cerenkov;
+
+  inline int operator ==(const RunTally& right) const
+    {return (this==&right);}
+};
+
+
+//This struct carries statistics for the whole Run
+struct RunTallybis {
+  float  Angle;
+  float  PositionX;
+  float  PositionY;
+  float  PositionZ;
+  float  DeathLambda;
+  float  BirthLambda;
+  float  Theta;
+  float  Phi;
+
+  inline int operator ==(const RunTallybis& right) const
+    {return (this==&right);}
+};
+
+
+struct RunTallyter {
+  float TotTrackLen;
+  float TimeTransSc;
+  float TimeEmissionScPTP;
+  float TimeEmissionScPOPOP;
+  float TimeEmissionSc;
+  float TimeTotalSc;
+  float TimeTransitPMT;
+  float TimeTotal;
+  float DeathLambda;
+
+  inline int operator ==(const RunTallyter& right) const
+    {return (this==&right);}
+};
+
+
+struct RunTallyDeposited {
+  float EdepTotal;
+  //float EdepTotalPositionCorrected;
+  float EdepTotalCorrected;
+  float EdepCoinc;
+  float EdepElec;
+  float EdepGamma;
+  float EdepGammaBCCorrection;
+  float EdepGammaPositionCorrection;
+  float EdepGammaCorrected;
+  float EdepConv;
+  float EdepParticleBCCorrection;
+  float EdepParticlePositionCorrection;
+  float EdepParticleCorrected;
+  float EdepTOTALBCCorrection;
+  float EdepTOTALPositionCorrection;
+  float EdepTOTALCorrected;
+  float EdepAlpha;
+  float EdepTotalFalaise;
+  float EdepTotalFalaiseBCCorrected;
+  float EdepTotalFalaisePositionCorrected;
+  float EdepTotalFalaisePositionResolutionCorrected;
+  float EdepTotalFalaiseCorrected;
+  float EdepTotalOpticalCorrected;
+  float TrueEdep;
+  float Position_X;
+  float Position_Y;
+  float Position_Z;
+  int NumberInteraction;
+  bool Coinc;
+  std::vector<float> E_compton;
+  std::vector<float> Gamma_Interaction_X;
+  std::vector<float> Gamma_Interaction_Y;
+  std::vector<float> Gamma_Interaction_Z;
+
+
+
+
+
+  inline int operator ==(const RunTallyDeposited& right) const
+    {return (this==&right);}
+};
+
+
+struct RunTallyEmitted {
+  float E_emitted_Elec;
+  float E_emitted_Alpha;
+  //float E_emitted_Gamma;
+
+  inline int operator ==(const RunTallyEmitted& right) const
+    {return (this==&right);}
+};
+
+
+struct RunTallyGamma {
+  float E_emitted_Gamma;
+
+
+    inline int operator ==(const RunTallyGamma& right) const
+  {return (this==&right);}
+};
+
+struct RunTallyCompton {
+  float E_Compton;
+
+    inline int operator ==(const RunTallyCompton& right) const
+  {return (this==&right);}
+};
+
+
+
+struct RunTallyConv {
+  float E_emitted_Conv;
+
+  inline int operator ==(const RunTallyConv& right) const
+    {return (this==&right);}
+};
+
+
+struct RunTallyPosition {
+  float Position_x;
+  float Position_y;
+  float Position_z;
+
+  inline int operator ==(const RunTallyPosition& right) const
+    {return (this==&right);}
+};
+
+class SN_OpticalSimEventAction : public G4UserEventAction
+{
+  public:
+    SN_OpticalSimEventAction(char*);
+   ~SN_OpticalSimEventAction();
+  
+public:
+  void BeginOfEventAction(const G4Event*);
+  void EndOfEventAction(const G4Event*);
+  //Keeps track of the total number of generated photons
+  void AddGenerated(G4int numgenerated){Statistics.Generated+=numgenerated;}
+  //Keeps track of the total energy deposited in the scintillator
+  void AddEdep(G4double edep){Statistics.Deposit+=edep;}
+  void AddTrackLength(G4double d){Statistics.Total_Track_Length_e+=d;}
+  float GetTotalTrackLength(){return Statistics.Total_Track_Length_e;}
+  void Set_Depth_Max(float e) {Statistics.Depth_Max =e;}
+  float Get_Depth_Max() {return Statistics.Depth_Max ;}
+  
+  //void CountDetected(Tally);
+  void CountDetected_without_CU(){Statistics.Detected_without_CU++;}
+  void CountDetected(){Statistics.Detected++;}
+  void CountWLS(){Statistics.WLS++;}
+  void CountAbsorbed(){Statistics.Absorbed++;}
+  void CountBulkAbs(){Statistics.BulkAbs++;}
+  void CountEscaped(){Statistics.Escaped++;}
+  void CountFailed(){Statistics.Failed++;}
+  void E_emitted_Elec(float e) {Statsemitted.E_emitted_Elec =e;}
+  void E_emitted_Alpha(float e) {Statsemitted.E_emitted_Alpha =e;}
+  //void E_emitted_Gamma(float e) {Statsgamma.E_emitted_Gamma =e;}
+  void E_emitted_Conv(float e) {Statsconv.E_emitted_Conv =e;}
+  //void E_emitted_Gamma(float e) {Statsemitted.E_emitted_Gamma =e;}
+  void E_deposited_Elec(float e) {Statsdeposited.EdepElec +=e;}
+  void E_deposited_Alpha(float e) {Statsdeposited.EdepAlpha +=e;}
+  void E_deposited_Gamma(float e) {Statsdeposited.EdepGamma +=e;}
+  void E_deposited_Gamma_BC_Corrected(float e) {Statsdeposited.EdepGammaBCCorrection +=e;}
+  void E_deposited_Gamma_Position_Corrected(float e) {Statsdeposited.EdepGammaPositionCorrection +=e;}
+  void E_deposited_Gamma_Corrected(float e) {Statsdeposited.EdepGammaCorrected +=e;}
+  void E_deposited_Conv(float e) {Statsdeposited.EdepConv +=e;}
+  void E_deposited_Total(float e) {Statsdeposited.EdepTotal +=e;}
+  void E_deposited_Coinc(float e) {Statsdeposited.EdepCoinc +=e;}
+  float Get_E_deposited_Coinc() {return Statsdeposited.EdepCoinc;}
+  float Get_E_deposited_Gamma() {return Statsdeposited.EdepGamma;}
+  float Get_E_deposited_Gamma_BC_Corrected() {return Statsdeposited.EdepGammaBCCorrection;}
+  float Get_E_deposited_Gamma_Position_Corrected() {return Statsdeposited.EdepGammaPositionCorrection;}
+  float Get_E_deposited_Gamma_Corrected() {return Statsdeposited.EdepGammaCorrected;}
+  void Set_Position_X(float e) {Statsdeposited.Position_X =e;}
+  void Set_Position_Y(float e) {Statsdeposited.Position_Y =e;}
+  void Set_Position_Z(float e) {Statsdeposited.Position_Z =e;}
+  void E_deposited_Total_Corrected(float e) {Statsdeposited.EdepTotalCorrected +=e;}
+  void Set_Number_Interaction() {Statsdeposited.NumberInteraction ++;}
+  int Get_Number_Interaction() {return Statsdeposited.NumberInteraction;}
+  void Set_Coinc() {Statsdeposited.Coinc = true;}
+  bool Get_Coinc() {return Statsdeposited.Coinc;}
+
+  void Fill_E_Compton (G4float E) {Statsdeposited.E_compton.push_back(E);};
+  void Fill_Gamma_Interaction_X (G4float x) {Statsdeposited.Gamma_Interaction_X.push_back(x);};
+  void Fill_Gamma_Interaction_Y (G4float y) {Statsdeposited.Gamma_Interaction_Y.push_back(y);};
+  void Fill_Gamma_Interaction_Z (G4float z) {Statsdeposited.Gamma_Interaction_Z.push_back(z);};
+
+
+
+  void Setcpt_without_CU(G4int e){ cpt_without_CU = e;}
+  G4int Getcpt_without_CU(){return cpt_without_CU;}
+
+  void Setcpt_photons_lost(G4int d){ cpt_photons_lost = d;}
+  G4int Getcpt_photons_lost(){return cpt_photons_lost;}
+
+  void Setnph(int d){ nph = d;}
+  int Getnph() {return nph;}
+
+  void CountCerenkov(){Statistics.Count_Cerenkov++;}
+  int GetCountCerenkov(){return Statistics.Count_Cerenkov;}
+  void CountScintillation(){Statistics.Count_Scintillation++;}
+  int GetCountScintillation(){return Statistics.Count_Scintillation;}
+
+    
+  //Keeps track of the incident energy of the primary particle
+  void SetIncidentE(G4double ince){Statistics.IncidentE=ince;}
+
+ 
+private:
+  
+  TTree *EventTree;
+  TBranch *EventBranch;
+  //Tally BranchFiller;
+  RunTally Statistics;
+  RunTallybis Statsbis;
+  RunTallyter Statster;
+  RunTallyDeposited Statsdeposited;
+  RunTallyEmitted Statsemitted;
+  RunTallyGamma Statsgamma;
+  RunTallyCompton Statscompton;
+  RunTallyConv Statsconv;
+  RunTallyPosition Statsposition;
+  G4int cpt_without_CU;
+  G4int cpt_with_CU;
+  G4int cpt_photons_lost;
+  G4int nph;
+  G4int nph_cerenkov;
+  G4int nph_scintillation;
+  G4double NRJ1;
+  G4double NRJ2;
+  G4double NRJ3;
+  G4double NRJ4;
+  G4double NRJ5;
+  G4double NRJ6;
+  G4double NRJ7;
+  G4double NRJ8;
+  G4double NRJ9;
+  G4String suffixe;
+
+
+
+  
+  
+};
+
+
+#endif
+
+    

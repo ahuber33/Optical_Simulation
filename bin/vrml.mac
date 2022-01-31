@@ -1,0 +1,132 @@
+/vis/open OGL 600x600-0+0
+/vis/drawVolume
+#/vis/viewer/set/style wireframe
+/vis/viewer/set/viewpointThetaPhi 90 0
+/vis/viewer/zoom 8.
+#/vis/viewer/set/auxiliaryEdge true
+#/vis/set/lineWidth 2
+#/vis/viewer/set/hiddenMarker true
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate
+
+
+
+
+# /vis/scene/create
+# /vis/scene/add/volume
+# /vis/sceneHandler/create OGLIX
+# /vis/viewer/create		
+
+
+# /vis/viewer/set/viewpointThetaPhi 90 0
+# #/vis/viewer/set/viewpointThetaPhi 0 90
+# /vis/viewer/zoom 4.
+# #/vis/viewer/set/style wireframe
+
+
+/vis/sceneHandler/attach
+/vis/viewer/flush
+
+/vis/scene/endOfEventAction accumulate 10
+/vis/scene/endOfEventAction refresh
+
+/vis/scene/add/hits
+/tracking/storeTrajectory 1
+
+/control/verbose 0
+/run/verbose 2
+/tracking/verbose 1
+
+#/vis/open VRML2FILE
+#/vis/scene/create
+
+
+
+
+
+######################################################
+### PART TO SIMULATE PARTICLE WITH GPS (no setgun) ###
+######################################################
+/gps/number 1
+
+
+# PART TO SIMULATE 1 MEV ELECTRON !!!!!!!!
+/gps/particle e-
+/gps/pos/type Point
+/gps/pos/centre 0.0 0.0 -114.5 mm
+# /gps/pos/centre 0.0 0.0 -200 mm
+# # /gps/pos/centre 111.0 0.0 76.4 mm
+/gps/direction 0.0 0.0 1.0
+/gps/energy 1. MeV
+# #/gps/ang/type iso
+
+# /gps/particle gamma
+# /gps/pos/type Plane
+# /gps/pos/shape Rectangle
+# /gps/pos/centre 0. 0. -120 mm 
+# /gps/pos/halfx 128 mm
+# /gps/pos/halfy 128 mm
+# /gps/direction 0.0 0.0 1.0
+# /gps/energy 1. MeV
+
+
+#/gps/particle e-
+#/gps/pos/type Plane
+#/gps/pos/shape Circle
+#/gps/pos/centre 0. 0. -20.5 mm
+#/gps/pos/radius 20. mm
+#/gps/direction 0.0 0.0 1.0
+#/gps/energy 1. MeV
+
+
+##################################
+######## Source 207 Bi ###########
+##################################
+#/gps/particle alpha
+##/gps/pos/type Plane
+##/gps/pos/shape Rectangle
+##/gps/pos/centre 0. 0. -125.6 mm 
+#/gps/pos/centre 88. 70. 78.712 mm 
+#/gps/pos/centre 111. 0. 78.712 mm 
+#/gps/pos/centre 120. 120. -125.6 mm 
+#5mm from OM
+##/gps/pos/halfx 7 mm
+##/gps/pos/halfy 13 mm
+#/gps/pos/halfz 0.02 mm
+#/gps/confine PhysicalSource
+#/gps/energy .1 MeV
+
+
+# PART TO SIMULATE NUCLEUS ON OM'S MATERIAL !!!!!!!!!!
+# /gps/particle ion
+# /gps/ion 83 207 0
+# /grdm/nucleusLimits 207 207 83 83
+# /gps/ang/type iso
+# /gps/energy 0. MeV
+
+#/gps/pos/type Surface
+#/gps/pos/shape Sphere
+#/gps/pos/centre 0 0  11.0 cm
+#/gps/pos/radius 33. cm
+#/gps/particle gamma
+#/gps/energy 3. MeV
+#/gps/ang/type cos
+#/gps/pos/confine PhysicalScint
+#/gps/confine PhysicalPMTGlass
+
+#GÃ©omÃ©trie de source rectangulaire Scintillateur
+#/gps/particle alpha
+#/gps/energy 1. MeV
+#/gps/ang/type iso
+#/gps/pos/type Volume
+#/gps/pos/shape Para
+#/gps/pos/centre 0. 0. -280. mm
+#/gps/pos/centre 0. 0. 0. mm
+#/gps/pos/halfx 220 mm
+#/gps/pos/halfy 220 mm
+#/gps/pos/halfz 170 mm
+#/gps/pos/confine PhysicalScint
+
+
+
+/run/beamOn 1

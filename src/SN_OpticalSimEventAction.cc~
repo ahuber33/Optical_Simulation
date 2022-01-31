@@ -1,0 +1,329 @@
+/// SN_OpticalSimEventAction.cc
+/// Author: Benton Pahlka <pahlka@physics.utexas.edu> 
+/// Copyright: 2010 (C) NEMO3/SuperNEMO - University of Texas at Austin
+/// Modified and completed : Arnaud HUBER <huber@cenbg.in2p3.fr>
+/// Copyright: 2016 (C) NEMO3/SuperNEMO - University of Bordeaux
+
+#include "G4SteppingManager.hh"
+#include "SN_OpticalSimSteppingAction.hh"
+#include "G4Run.hh"
+#include "SN_OpticalSimEventAction.hh"
+#include "G4RunManager.hh"
+#include "SN_OpticalSimRunAction.hh"
+#include "G4Event.hh"
+#include "G4EventManager.hh"
+#include "G4TrajectoryContainer.hh"
+#include "G4Trajectory.hh"
+#include "G4VVisManager.hh"
+#include "G4ios.hh"
+#include <fstream>
+#include <iostream>
+#include "G4PrimaryVertex.hh"
+#include <math.h>
+#include "TRandom3.h"
+#include "TGraph.h"
+ 
+using namespace CLHEP;
+
+SN_OpticalSimEventAction::SN_OpticalSimEventAction(char* suff):suffixe(suff){}
+ 
+SN_OpticalSimEventAction::~SN_OpticalSimEventAction(){}
+
+
+// Initialize all counters and set up the event branches for
+// filling histograms with ROOT
+void SN_OpticalSimEventAction::BeginOfEventAction(const G4Event* evt){
+ 
+
+  //G4cout << "Starting EventAction..." << G4endl;
+
+  Statistics.Deposit = 0;
+  Statistics.Generated = 0;
+  Statistics.WLS = 0;
+  Statistics.Absorbed = 0;
+  Statistics.BulkAbs = 0;
+  Statistics.Escaped = 0;
+  Statistics.Failed = 0;
+  Statistics.Detected_without_CU = 0;
+  Statistics.Lost = 0;
+  Statistics.Detected = 0;
+  Statistics.FWHM = 0;
+  Statistics.FWHM_final = 0;
+  Statistics.Frac_Detected = 0;
+  Statistics.Frac_Transmitted = 0;
+  Statistics.Total_Track_Length_e = 0;
+  Statistics.Count_Scintillation = 0;
+  Statistics.Count_Cerenkov = 0;
+  cpt_without_CU =0;
+  cpt_with_CU = 0;
+  cpt_photons_lost =0;
+  nph =0;
+  nph_cerenkov =0;
+  nph_scintillation =0;
+  Statsemitted.E_emitted_Elec =0;
+  Statsemitted.E_emitted_Alpha =0;
+  Statsdeposited.EdepElec =0;
+  Statsdeposited.EdepAlpha =0;
+  Statsdeposited.EdepGamma =0;
+  Statsdeposited.EdepGammaBCCorrection =0;
+  Statsdeposited.EdepGammaPositionCorrection =0;
+  Statsdeposited.EdepGammaCorrected =0;
+  Statsdeposited.EdepConv =0;
+  Statsdeposited.EdepTotal =0;
+  Statsdeposited.EdepParticleBCCorrection =0;
+  Statsdeposited.EdepParticlePositionCorrection =0;
+  Statsdeposited.EdepParticleCorrected =0;
+  Statsdeposited.EdepTOTALBCCorrection =0;
+  Statsdeposited.EdepTOTALPositionCorrection =0;
+  Statsdeposited.EdepTOTALCorrected =0;
+  Statsdeposited.EdepCoinc =0;
+  //Statsdeposited.EdepTotalPositionCorrected =0;
+  Statsdeposited.EdepTotalCorrected =0;
+  Statsdeposited.EdepTotalFalaise =0;
+  Statsdeposited.EdepTotalFalaiseBCCorrected =0;
+  Statsdeposited.EdepTotalFalaisePositionCorrected =0;
+  Statsdeposited.EdepTotalFalaisePositionResolutionCorrected =0;
+  Statsdeposited.EdepTotalFalaiseCorrected =0;
+  Statsdeposited.EdepTotalOpticalCorrected =0;
+  Statsdeposited.TrueEdep =0;
+  Statsdeposited.NumberInteraction =0;
+  Statsdeposited.Coinc =false;
+  Statsdeposited.Position_X =0;
+  Statsdeposited.Position_Y =0;
+  Statsdeposited.Position_Z =0;
+  Statsdeposited.Compton.clear();
+
+
+
+
+
+  //create the ROOT tree to store the data
+  char branchname[20];
+  
+  // PART TO OBTAIN TIME INFORMATION ON EACH EVENT !!!!!!!!!!
+  // sprintf(branchname,"Event%d",evt->GetEventID());
+  // EventTree = new TTree(branchname,branchname);
+ 
+  // EventBranch = EventTree->Branch("TotTrackLen",&BranchFiller.TotTrackLen,"TotTrackLen/F");
+  // EventBranch = EventTree->Branch("TimeTransSc",&BranchFiller.TimeTransSc,"TimeTransSc/F");
+  // EventBranch = EventTree->Branch("TimeEmissionScPTP",&BranchFiller.TimeEmissionScPTP,"TimeEmissionScPTP/F");
+  // EventBranch = EventTree->Branch("TimeEmissionScPOPOP",&BranchFiller.TimeEmissionScPOPOP,"TimeEmissionScPOPOP/F");
+  // EventBranch = EventTree->Branch("TimeEmissionSc",&BranchFiller.TimeEmissionSc,"TimeEmissionSc/F");
+  // EventBranch = EventTree->Branch("TimeTotalSc",&BranchFiller.TimeTotalSc,"TimeTotalSc/F");
+  // EventBranch = EventTree->Branch("TimeTransitPMT",&BranchFiller.TimeTransitPMT,"TimeTransitPMT/F");
+  // EventBranch = EventTree->Branch("TimeTotal",&BranchFiller.TimeTotal,"TimeTotal/F");
+  
+}
+
+
+// Get the number of stored trajectories and calculate the statistics
+void SN_OpticalSimEventAction::EndOfEventAction(const G4Event* evt){
+  //  G4int event_id = evt->GetEventID();
+
+  //G4cout << "Number of gamma interaction = " << Statsdeposited.NumberInteraction << G4endl;
+
+
+
+  //G4cout << "Energy compton 0 = " <<   Statsgammadeposited.Energy_Compton.at(0) << G4endl;
+  //G4cout << "Energy compton 1 = " <<   Statsgammadeposited.Energy_Compton.at(1) << G4endl;
+
+    G4long seed = time(NULL)+10;
+  TRandom3* gen = new TRandom3(0);
+  TRandom3* gen1 = new TRandom3(seed);
+  SN_OpticalSimRunAction *runac = (SN_OpticalSimRunAction*)(G4RunManager::GetRunManager()->GetUserRunAction());
+  
+  float Verif_E_tot = Statsdeposited.EdepElec + Statsdeposited.EdepAlpha + Statsdeposited.EdepConv + Statsdeposited.EdepGamma ;
+  G4double Absfrac = 0;
+  G4double Bulkfrac = 0;
+  G4double Escfrac = 0;
+  G4double Failfrac = 0;
+  G4double WLSfrac = 0;
+  G4double Catfrac = 0;
+  G4TrajectoryContainer* trajectoryContainer = evt->GetTrajectoryContainer();
+  G4int n_trajectories = 0;
+
+
+
+
+  //TFile *f = new TFile("/home/local1/Optical_Simulation_Arnaud/simulation_input_files/Correction_energie.root");
+  //TGraph *Graph = (TGraph*)f->Get("Graph");
+  //double correction = Graph->Eval(Statsdeposited.EdepTotalPositionCorrected);
+  //Statsdeposited.EdepTotalCorrected = Statsdeposited.EdepTotalPositionCorrected / correction;
+  //G4cout << "Correction energie = " << correction << G4endl;
+  
+  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+  G4double efficiency = 0;
+  G4double efficiency_final = 0;
+  //G4double Factor_Correction = Statsdeposited.EdepTotalCorrected / Statsdeposited.EdepTotal;
+
+
+
+  Statsdeposited.EdepTOTALBCCorrection = Statsdeposited.EdepGammaBCCorrection + Statsdeposited.EdepParticleBCCorrection;
+  Statsdeposited.EdepTOTALPositionCorrection = Statsdeposited.EdepGammaPositionCorrection + Statsdeposited.EdepParticlePositionCorrection;
+  Statsdeposited.EdepTOTALCorrected = Statsdeposited.EdepGammaCorrected + Statsdeposited.EdepParticleCorrected;
+
+
+  //BE CAREFUL, 8.4% is the resolution for GA0124 !!!!!!!
+  //G4double Resolution_Position_Corrected = 8.4 / sqrt(Statsdeposited.EdepTotalPositionCorrected / 1000); //BE CAREFUL, 8.4% is the resolution for GA0124 !
+
+  G4double Resolution_BC_Correction = 8.1 / sqrt(Statsdeposited.EdepTOTALBCCorrection / 1000); //BE CAREFUL, 8.4% is the resolution for GA0124 !
+  G4double Resolution_Position_Correction = 8.1 / sqrt(Statsdeposited.EdepTOTALPositionCorrection / 1000); //BE CAREFUL, 8.4% is the resolution for GA0124 !
+  G4double Resolution_Corrected = 8.1 / sqrt(Statsdeposited.EdepTOTALCorrected / 1000); //BE CAREFUL, 8.4% is the resolution for GA0124 !
+  G4double Resolution = 8.1 / sqrt(Statsdeposited.EdepTotal / 1000); //BE CAREFUL, 8.4% is the resolution for GA0124 !
+
+    Statsdeposited.EdepTotalFalaise = gen->Gaus(Statsdeposited.EdepTotal, (Statsdeposited.EdepTotal * 0.01 * Resolution) / 2.355); // Energy obtain in Falaise without correction from Optical Simulation !!!
+    // G4cout << "E dep GEANT4 Basic [EVENT] = " << Statsdeposited.EdepTotal << " keV " << G4endl;
+    // G4cout << "E deposited true GEANT4 [EVENT] = " << Statsdeposited.EdepTotalFalaise << " keV " << G4endl;
+  
+  Statsdeposited.EdepTotalFalaiseBCCorrected = gen->Gaus(Statsdeposited.EdepTOTALBCCorrection, (Statsdeposited.EdepTOTALBCCorrection * 0.01 * Resolution_BC_Correction) / 2.355); // Energy obtain in Falaise with Birks Cerenkov correction !!!
+
+  // G4cout << "E dep GEANT4 BC Correction [EVENT] = " << Statsdeposited.EdepTOTALBCCorrection << " keV " << G4endl;
+  // G4cout << "E deposited BC Correction [EVENT] = " << Statsdeposited.EdepTotalFalaiseBCCorrected << " keV " << G4endl;
+
+  Statsdeposited.EdepTotalFalaisePositionCorrected = gen->Gaus(Statsdeposited.EdepTOTALPositionCorrection, (Statsdeposited.EdepTOTALPositionCorrection * 0.01 * Resolution_Position_Correction) / 2.355); // Energy obtain in Falaise with Birks Cerenkov correction !!!
+  // G4cout << "E dep GEANT4 Position Correction [EVENT] = " << Statsdeposited.EdepTOTALPositionCorrection << " keV " << G4endl;
+  // G4cout << "E deposited Position Correction [EVENT] = " << Statsdeposited.EdepTotalFalaisePositionCorrected << " keV " << G4endl;
+
+  Statsdeposited.EdepTotalFalaiseCorrected = gen->Gaus(Statsdeposited.EdepTOTALCorrected, (Statsdeposited.EdepTOTALCorrected * 0.01 * Resolution_Corrected) / 2.355); // Energy obtain in Falaise with Birks Cerenkov correction !!!
+  // G4cout << "E dep GEANT4 ALL Correction [EVENT] = " << Statsdeposited.EdepTOTALCorrected << " keV " << G4endl;
+  // G4cout << "E deposited ALL Correction [EVENT] = " << Statsdeposited.EdepTotalFalaiseCorrected << " keV " << G4endl;
+
+    Statistics.Frac_Detected = 100*(cpt_without_CU - cpt_photons_lost) / (1.0*GetCountCerenkov() + 1.0*GetCountScintillation());
+    Statistics.Frac_Transmitted = 100*(Statistics.Failed) / (1.0*GetCountCerenkov() + 1.0*GetCountScintillation());
+
+
+  if (Statistics.Generated!=0){
+    efficiency = 100*(1.0*cpt_without_CU)/(1.0*Statistics.Generated);
+    Absfrac = 100*(1.0*Statistics.Absorbed)/(1.0*Statistics.Generated);
+    Bulkfrac = 100*(1.0*Statistics.BulkAbs)/(1.0*Statistics.Generated);
+    Escfrac = 100*(1.0*Statistics.Escaped)/(1.0*Statistics.Generated);
+    Failfrac = 100*(1.0*Statistics.Failed)/(1.0*Statistics.Generated);
+    WLSfrac = 100*(1.0*Statistics.WLS)/(1.0*Statistics.Generated);
+    Catfrac = 100 * (cpt_photons_lost/(1.0*Statistics.Detected));
+    efficiency_final = 100 * ((cpt_without_CU - cpt_photons_lost)/(1.0*Statistics.Generated));
+    Statistics.FWHM = 100*2.35/sqrt(cpt_without_CU);
+    Statistics.FWHM_final = 100*2.35/sqrt(cpt_without_CU - cpt_photons_lost);
+    Statistics.Lost = cpt_photons_lost;
+
+    Statsdeposited.EdepTotalFalaise = gen->Gaus(Statsdeposited.EdepTotal, (Statsdeposited.EdepTotal * 0.01 * Resolution) / 2.355); // Energy obtain in Falaise without correction from Optical Simulation !!!
+    // G4cout << "E dep GEANT4 Basic [EVENT] = " << Statsdeposited.EdepTotal << " keV " << G4endl;
+    // G4cout << "E deposited true GEANT4 [EVENT] = " << Statsdeposited.EdepTotalFalaise << " keV " << G4endl;
+
+    Statsdeposited.EdepTotalFalaisePositionCorrected = gen->Gaus(Statsdeposited.EdepTotalCorrected, (Statsdeposited.EdepTotalCorrected * 0.01*Resolution) / 2.355); //Correction only on the energy / scan Sc
+
+    Statsdeposited.EdepTotalFalaisePositionResolutionCorrected = gen1->Gaus(Statsdeposited.EdepTotalCorrected, (Statsdeposited.EdepTotalCorrected * 0.01 * Resolution_Corrected) / 2.355); //Correction on the energy and so also on the resolution in accordance with this new energy 
+
+    //Statsdeposited.EdepTotalFalaiseCorrected = gen->Gaus(Statsdeposited.EdepTotalCorrected, (Statsdeposited.EdepTotalCorrected * 0.01 * Resolution_Corrected) / 2.355); // Correction complete on Energy => Correction on energy (position & resolution) and also correction in accordance with the incident energy !!!
+
+    //Statsdeposited.EdepTotalFalaiseCorrected = Statsdeposited.EdepTotalFalaisePositionResolutionCorrected; //Indeed, the previous correction is obsolete !!!!
+
+    Statsdeposited.EdepTotalOpticalCorrected = gen->Gaus(Statsdeposited.EdepTotalCorrected, (Statsdeposited.EdepTotalCorrected * 0.01 * Statistics.FWHM_final) / 2.355); // Correction made with the information from optical simulation (photons)
+
+    //Statsdeposited.TrueEdep = 1.57243 + 1.26844*(cpt_without_CU - cpt_photons_lost) ; //FROM the calibration with Isopro for G40124!!!
+    //Statsdeposited.TrueEdep = 4.06 + 1.23754*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for GA0124 !!!
+    //Statsdeposited.TrueEdep = 3.92234 + 1.25463*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for GA0494 [Cathode Uniformity]!!!
+    //Statsdeposited.TrueEdep = 2.88337 + 1.26969*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for GA0494 [Anode xaxis Uniformity]!!!
+    //Statsdeposited.TrueEdep = 5.938 + 1.31358*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for GA0494 [Anode Uniformity TH2]!!!
+    //Statsdeposited.TrueEdep = 1.68093 + 1.24831*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for MEAN UNIFORMITY from ALL DATASHEET [Anode Uniformity TH2]!!!
+    Statsdeposited.TrueEdep = 2.5248 + 1.14921*(cpt_without_CU - cpt_photons_lost) ; // FROM the calibration with RTV for MEAN UNIFORMITY from ALL DATASHEET [Anode Uniformity TH2]!!!
+
+    //Statsdeposited.TrueEdep = -0.104595 + 1.27496*(cpt_without_CU - cpt_photons_lost) ; //FROM the calibration !!! Dont use!!!
+
+
+  }
+
+
+  if (Statistics.Generated >10)
+  {
+
+  
+      // Output the results
+      G4cout  << "\n\nRun " << G4RunManager::GetRunManager()->GetCurrentRun()->GetRunID() <<  " >>> Event " << evt->GetEventID() << G4endl;
+      G4cout << "Incident Energy:                  " << Statistics.IncidentE/keV << " keV " << G4endl;
+      G4cout << "Energy Deposited:                 " << Statistics.Deposit/keV   << " keV " << G4endl;
+      G4cout << "Photons Generated:                " << Statistics.Generated     << G4endl;
+      
+      G4cout << "Photons Surface Absorbed:         " << Statistics.Absorbed      << "        " << Absfrac << " % " << G4endl;
+      G4cout << "Photons Bulk Absorbed:            " << Statistics.BulkAbs       << "        " << Bulkfrac << " % " << G4endl;
+      G4cout << "Photons Escaped:                  " << Statistics.Escaped       << "        " << Escfrac << " % " << G4endl;
+      G4cout << "Photons Transmitted to PMT:       " << Statistics.Failed        << "        " << Failfrac << " % " << G4endl;
+      G4cout << "Photons Collected in PMT (QE):    " << cpt_without_CU      << "        " << efficiency << " % " << G4endl;
+      G4cout << "Lost (Cathode Uniformity) :       " << cpt_photons_lost << "        " << Catfrac << " % " << " /(" << Statistics.Detected <<") " << G4endl;
+      G4cout << "Photons Collected in PMT (TOTAL): " << cpt_without_CU - cpt_photons_lost      << "        " << efficiency_final << " % " << G4endl;
+      G4cout << "Total Photons Considered:         " << Statistics.Absorbed + Statistics.BulkAbs + Statistics.Escaped + Statistics.Failed + cpt_without_CU  << "        " << Absfrac + Bulkfrac + Escfrac + Failfrac + efficiency << " % " << G4endl;
+      G4cout << "Photons WL Shifted:               " << Statistics.WLS           << "        " << WLSfrac << " % " << G4endl;
+      G4cout << ""  <<  G4endl;
+      G4cout << "FWHM resolution (without cathode uniformity): " << Statistics.FWHM << "% " << G4endl;
+      G4cout << "FWHM resolution (with cathode uniformity):    " << Statistics.FWHM_final << "% " << G4endl;
+      G4cout << "FWHM resolution CORRECTED:                    " << Resolution_Corrected << "% " << G4endl;
+      G4cout << "FWHM resolution BASIC FALAISE:                " << Resolution << "% " << G4endl;
+      G4cout << ""  <<  G4endl;
+      G4cout << "Energy emitted electron :                     " << Statsemitted.E_emitted_Elec << " keV " << G4endl;
+      G4cout << "Energy emitted alpha :                        " << Statsemitted.E_emitted_Alpha << " keV " << G4endl;
+      G4cout << "Energy deposited electron :                   " << Statsdeposited.EdepElec   << " keV " << G4endl;
+      G4cout << "Energy deposited alpha :                      " << Statsdeposited.EdepAlpha   << " keV " << G4endl;
+      G4cout << "Energy deposited gamma :                      " << Statsdeposited.EdepGamma   << " keV " << G4endl;
+      G4cout << "Energy deposited conv :                       " << Statsdeposited.EdepConv   << " keV " << G4endl;
+      G4cout << "Energy deposited tot :                        " << Statsdeposited.EdepTotal   << " keV " << G4endl;
+      //G4cout << "Energy deposited tot position CORRECTED:      " << Statsdeposited.EdepTotalPositionCorrected   << " keV " << G4endl;
+      G4cout << "Energy deposited tot CORRECTED :              " << Statsdeposited.EdepTotalCorrected   << " keV " << G4endl;
+      //G4cout << "Energy deposited tot VERIF :           " << Verif_E_tot   << " keV " << G4endl;
+      G4cout << ""  <<  G4endl;
+      G4cout << "Energy deposited FALAISE :                                  " << Statsdeposited.EdepTotalFalaise   << " keV " << G4endl;
+      //G4cout << "Energy deposited FALAISE Position Corrected:                " << Statsdeposited.EdepTotalFalaisePositionCorrected   << " keV " << G4endl;
+      //G4cout << "Energy deposited FALAISE Position Resolution CORRECTED:     " << Statsdeposited.EdepTotalFalaisePositionResolutionCorrected   << " keV " << G4endl;
+      G4cout << "Energy deposited FALAISE CORRECTED:                         " << Statsdeposited.EdepTotalFalaiseCorrected   << " keV " << G4endl;
+      //G4cout << "Energy deposited Optical CORRECTED :                        " << Statsdeposited.EdepTotalOpticalCorrected   << " keV " << G4endl;
+      G4cout << "VISIBLE Energy deposited (calibration) :                    " <<  Statsdeposited.TrueEdep  << " keV " << G4endl;
+      G4cout << ""  <<  G4endl;
+
+      }
+
+
+ 
+
+
+  // extract the trajectories and draw them
+  if (G4VVisManager::GetConcreteInstance()){
+     for (G4int i = 0; i < n_trajectories; i++) { 
+	 G4Trajectory* trj = (G4Trajectory*)((*(evt->GetTrajectoryContainer()))[i]);
+	 //  to NOT display the optical photons:
+	 	// if (trj->GetParticleName() != "opticalphoton")	 
+	 //  to display optical photons
+	 if (trj->GetParticleName() = "opticalphoton")	  
+	   trj->DrawTrajectory();
+     }
+  }
+
+  //if (Statsdeposited.EdepTotal/keV > 10)// &&   Statsdeposited.EdepCoinc/keV >10)
+  //{
+	  //Write the event statistics to the temp root file
+  // TFile f("temp.root","update");
+  // //gROOT->cd();
+  // EventTree->Write();    //Send the fates to the run tree by UpdateStatistics
+
+	  runac->UpdateStatistics(Statistics);
+	  runac->UpdateStatisticsDeposited(Statsdeposited);
+	  runac->UpdateStatisticsEmitted(Statsemitted);
+
+
+
+
+	  //  G4cout << "Leaving Event Action" << G4endl;
+	  //G4cout << "Coinc validé et event enregistré" << G4endl;
+	  //}
+ 
+}
+
+
+//every detected photon is one count on the event root tree
+// void SN_OpticalSimEventAction::CountDetected(Tally PhotonTally){ 
+//   Statistics.Detected++;
+//   BranchFiller = PhotonTally;
+//   EventTree->Fill();
+//     G4cout << "Event Action: we counted the photon" << G4endl;
+
+// }
+
+	
+

@@ -1,0 +1,246 @@
+/// Scintillator.hh
+/// Author: Benton Pahlka <pahlka@physics.utexas.edu> 
+/// Copyright: 2010 (C) NEMO3/SuperNEMO - University of Texas at Austin
+
+// This class is used to create a plastic scintillator.
+
+#ifndef Scintillator_h
+#define Scintillator_h
+
+#include "G4LogicalVolume.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
+
+class SN_OpticalSimMaterials;
+class Scintillator
+
+{
+public:
+
+  //constructor, builds from keys specified in buildfile
+  Scintillator(G4String buildfile);
+  ~Scintillator();
+  //  void Construct();
+  
+public:
+
+  // Functions to call this geometry in x_blockGeometry.cc
+  G4LogicalVolume *GetSNMW_Scint();
+  G4LogicalVolume *GetSNMW_Teflon();
+  G4LogicalVolume *GetSNMW_Mylar();
+  G4LogicalVolume *GetSNMW_8InchesScint();
+  G4LogicalVolume *GetSNMW_8InchesScint_coinc();
+  G4LogicalVolume *GetSNMW_8InchesMylar();
+  G4LogicalVolume *GetN3EC_Scintillator();
+  G4LogicalVolume *GetN3EC_Teflon();
+  G4LogicalVolume *GetN3EC_Mylar();
+  G4LogicalVolume *GetN3EC_LightGuide();
+  G4LogicalVolume *GetN3EC_WrapLightGuide();
+  G4LogicalVolume *GetN3EC_InterfaceLightGuide();
+  G4LogicalVolume *GetN3EC_WrapInterfaceLightGuide();
+  G4LogicalVolume *GetSNXW_Scintillator();
+  G4LogicalVolume *GetSNXW_Teflon();
+  G4LogicalVolume *GetSNXW_Mylar();
+  G4LogicalVolume *GetSNXW_LightGuide();
+  G4LogicalVolume *GetSNXW_WrapLightGuide();
+  G4LogicalVolume *GetN3DC_Scintillator();
+  G4LogicalVolume *GetN3DC_8inch_Scintillator();
+  G4LogicalVolume *GetN3DC_Teflon();
+  G4LogicalVolume *GetN3DC_Mylar();
+  G4LogicalVolume *GetN3DC_8inch_Mylar();
+  G4LogicalVolume *GetN3L4_Scintillator();
+  G4LogicalVolume *GetN3L4_Teflon();
+  G4LogicalVolume *GetN3L4_Mylar();
+  G4LogicalVolume *GetSource();
+  G4LogicalVolume *GetBlindage();
+
+
+  // Functions that can be called to return various scint dimensions
+
+  //****************COMMON********************
+  // wrapping
+  G4double GetTeflonThickness(){return TeflonThickness;}
+  G4double GetAirGapTeflon(){return AirGapTeflon;}
+  G4double GetMylarThickness(){return MylarThickness;}
+  G4double GetAirGapMylar(){return AirGapMylar;}
+  // glue
+  G4double GetGlueThickness(){return GlueThickness;}
+  // PMT
+  G4double GetPMTGlassRadius(){return PMTGlassRadius;}
+  G4double GetPMTGlassThickness(){return PMTGlassThickness;}
+  G4double GetPMTRearGlassRadius(){return PMTRearGlassRadius;}
+  G4double GetPMTPhotocathodeThickness(){return PMTPhotocathodeThickness;}
+  G4double GetPMTGlassTubeRadius(){return PMTGlassTubeRadius;}
+  G4double GetPMTGlassTubeHeight(){return PMTGlassTubeHeight;}
+
+  // *******SuperNEMO Main Wall*********
+  // scint 
+  G4double GetSNMW_ScintStepWidth(){return SNMW_ScintStepWidth;}
+  G4double GetSNMW_ScintStepHeight(){return SNMW_ScintStepHeight;}
+  G4double GetSNMW_ScintBodyWidth(){return SNMW_ScintBodyWidth;}
+  G4double GetSNMW_ScintBodyHeight(){return SNMW_ScintBodyHeight;}
+  G4double GetSNMW_CouplingRadius(){return SNMW_CouplingSphereRadius;}
+  G4double GetSNMW_CouplingDepth(){return SNMW_CouplingSphereDepth;}
+  G4double GetSNMW_FullScintHeight(){return SNMW_ScintStepHeight+SNMW_ScintBodyHeight;}
+
+
+  //***************** NEMO3 EC *****************
+  // scint 
+  G4double GetN3EC_ScintWidth(){return N3EC_ScintWidth;}
+  G4double GetN3EC_ScintHeight(){return N3EC_ScintHeight;}
+  
+  // light guide
+  G4double GetN3EC_LightGuideRadius(){return N3EC_LightGuideRadius;}
+  G4double GetN3EC_LightGuideHeight(){return N3EC_LightGuideHeight;}
+  G4double GetN3EC_LightGuideCouplingRadius(){return N3EC_LightGuideCouplingRadius;}
+  G4double GetN3EC_LightGuideCouplingHeight(){return N3EC_LightGuideCouplingHeight;}
+  G4double GetN3EC_CouplingSphereDepth(){return N3EC_CouplingSphereDepth;}
+  G4double GetN3EC_LightGuideStepHeight(){return N3EC_LightGuideStepHeight;}
+  G4double GetN3EC_InterfaceLightGuideHeight(){return N3EC_InterfaceLightGuideHeight;}
+  G4double GetN3EC_CouplingSphereRadius(){return N3EC_CouplingSphereRadius;}
+
+
+  //***************** SuperNEMO XWALL *****************
+  // scint 
+  G4double GetSNXW_ScintWidth(){return SNXW_ScintWidth;}
+  G4double GetSNXW_ScintHeight(){return SNXW_ScintHeight;}
+  
+  // light guide
+  G4double GetSNXW_LightGuideRadius(){return SNXW_LightGuideRadius;}
+  G4double GetSNXW_LightGuideHeight(){return SNXW_LightGuideHeight;}
+  G4double GetSNXW_LightGuideCouplingHeight(){return SNXW_LightGuideCouplingHeight;}
+  G4double GetSNXW_CouplingSphereDepth(){return SNXW_CouplingSphereDepth;}
+  G4double GetSNXW_CouplingSphereRadius(){return SNXW_CouplingSphereRadius;}
+
+
+  //***************** NEM3 L4 *****************
+  // scint 
+  G4double GetN3L4_ScintLength(){return N3L4_ScintLength;}
+  G4double GetN3L4_ScintWidth(){return N3L4_ScintWidth;}
+  G4double GetN3L4_ScintHeight(){return N3L4_ScintHeight;}
+
+
+
+
+
+private:
+
+ 
+  Scintillator *theScint;
+  SN_OpticalSimMaterials* scintProp;
+
+  static const G4String path_bin;
+
+
+  // Materials
+  G4Material *scintillator;
+  G4Material *Plastic;
+  G4Material *Teflon;
+  G4Material *Mylar;
+  G4Material *RTV;
+  G4Material *Fer;
+  G4Material *Polystyrene;
+  G4Material *coating;
+  G4Material *Vacuum;
+  G4Material *PMMA;
+
+  // Physical Dimensions
+  // scint SuperNEMO
+  G4double SNMW_ScintStepWidth;
+  G4double SNMW_ScintStepHeight;
+  G4double SNMW_ScintBodyWidth;
+  G4double SNMW_ScintBodyHeight;
+  G4double SNMW_CouplingSphereRadius;
+  G4double SNMW_CouplingSphereDepth;
+  // wrapping
+  G4double AirGapTeflon;
+  G4double TeflonThickness;
+  G4double AirGapMylar;
+  G4double MylarThickness;  
+  // glue
+  G4double GlueThickness;  
+  // PMT
+  G4double PMTGlassRadius;  
+  G4double PMTGlassThickness;  
+  G4double PMTRearGlassRadius;  
+  G4double PMTPhotocathodeThickness;  
+  G4double PMTGlassTubeRadius;  
+  G4double PMTGlassTubeHeight; 
+
+  // scint NEMO3 EC
+  G4double N3EC_ScintWidth;
+  G4double N3EC_ScintHeight; 
+
+  // light guide NEMO EC
+  G4double N3EC_LightGuideRadius;
+  G4double N3EC_LightGuideHeight;
+  G4double N3EC_LightGuideCouplingRadius;
+  G4double N3EC_LightGuideCouplingHeight;
+  G4double N3EC_CouplingSphereDepth;
+  G4double N3EC_LightGuideStepHeight;
+  G4double N3EC_InterfaceLightGuideHeight;
+  G4double N3EC_CouplingSphereRadius;
+
+  // scint SuperNEMO XWALL
+  G4double SNXW_ScintWidth;
+  G4double SNXW_ScintHeight; 
+
+  // light guide XWALL
+  G4double SNXW_LightGuideRadius;
+  G4double SNXW_LightGuideHeight;
+  G4double SNXW_LightGuideCouplingHeight;
+  G4double SNXW_CouplingSphereDepth;
+  G4double SNXW_CouplingSphereRadius;
+
+  // scint NEMO3 L4
+  G4double N3L4_ScintLength;
+  G4double N3L4_ScintWidth;
+  G4double N3L4_ScintHeight; 
+
+  // Translations for unions/subtractions
+  G4double Step_BodyUnion;
+  G4double Block_SphereSubtraction;
+  G4double TeflonStep_BodyUnion;
+  G4double Teflon_ScintSubtraction;
+  G4double MylarStep_BodyUnion;
+  G4double Mylar_TeflonSubtraction;
+  G4double Mylar_SphereSubtraction;
+
+  // Logical Volumes
+  G4LogicalVolume *LogicalSNMW_FinalScint;
+  G4LogicalVolume *LogicalSNMW_TeflonWrap;
+  G4LogicalVolume *LogicalSNMW_MylarWrap;
+  G4LogicalVolume *LogicalSNMW_8InchesFinalScint;
+  G4LogicalVolume *LogicalSNMW_8InchesFinalScint_coinc;
+  G4LogicalVolume *LogicalSNMW_8InchesMylarWrap;
+  G4LogicalVolume *LogicalN3EC_Scintillator;
+  G4LogicalVolume *LogicalN3EC_TeflonWrap;
+  G4LogicalVolume *LogicalN3EC_MylarWrap;
+  G4LogicalVolume *LogicalN3EC_LightGuide;
+  G4LogicalVolume *LogicalN3EC_WrapLightGuide;
+  G4LogicalVolume *LogicalN3EC_InterfaceLightGuide;
+  G4LogicalVolume *LogicalN3EC_WrapInterfaceLightGuide;
+  G4LogicalVolume *LogicalSNXW_Scintillator;
+  G4LogicalVolume *LogicalSNXW_TeflonWrap;
+  G4LogicalVolume *LogicalSNXW_MylarWrap;
+  G4LogicalVolume *LogicalSNXW_LightGuide;
+  G4LogicalVolume *LogicalSNXW_WrapLightGuide;
+  G4LogicalVolume *LogicalN3DC_Scintillator;
+  G4LogicalVolume *LogicalN3DC_8inch_Scintillator;
+  G4LogicalVolume *LogicalN3DC_TeflonWrap;
+  G4LogicalVolume *LogicalN3DC_MylarWrap;
+  G4LogicalVolume *LogicalN3DC_8inch_MylarWrap;
+  G4LogicalVolume *LogicalN3L4_Scintillator;
+  G4LogicalVolume *LogicalN3L4_TeflonWrap;
+  G4LogicalVolume *LogicalN3L4_MylarWrap;
+  G4LogicalVolume *LogicalSource;
+  G4LogicalVolume *LogicalBlindage;
+
+
+  // Other
+  G4VisAttributes *clear;
+
+};
+#endif

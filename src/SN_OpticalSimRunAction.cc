@@ -1,0 +1,291 @@
+/// SN_OpticalSimRunAction.cc
+/// Author: Benton Pahlka <pahlka@physics.utexas.edu> 
+/// Copyright: 2010 (C) NEMO3/SuperNEMO - University of Texas at Austin
+/// Modified and completed : Arnaud HUBER <huber@cenbg.in2p3.fr>
+/// Copyright: 2016 (C) NEMO3/SuperNEMO - University of Bordeaux
+
+
+#include "SN_OpticalSimRunAction.hh"
+#include "Randomize.hh"
+#include <time.h>
+#include "G4Run.hh"
+#include "G4UImanager.hh"
+#include "G4VVisManager.hh"
+#include "G4ios.hh"
+#include "TFile.h"
+#include "TBranch.h"
+#include "TTree.h"
+#include "TH2I.h"
+#include "TH1D.h"
+#include "TAxis.h"
+#include <fstream>
+#include <iostream>
+
+SN_OpticalSimRunAction::SN_OpticalSimRunAction(char* suff):suffixe(suff){}
+SN_OpticalSimRunAction::~SN_OpticalSimRunAction(){}
+
+
+//-----------------------------------------------------
+//  BeginOfRunAction:  used to calculate the start time and 
+//  to set up information in the run tree.  
+//-----------------------------------------------------
+void SN_OpticalSimRunAction::BeginOfRunAction(const G4Run* aRun){
+
+  gROOT->ProcessLine("#include <vector>");
+
+  G4String fileName = suffixe+".root";
+  //f = new TFile(fileName,"UPDATE");
+   
+    start = time(NULL);     //start the timer clock to calculate run times
+
+    theRunTree = new TTree("theRunTree","Optical_Information");  
+
+    theRunTree_bis = new TTree("theRunTree_bis","Photocathode_Information_Transmitted");  
+
+    theRunTree_ter = new TTree("theRunTree_ter","Timing_Information");  
+
+    Tree_deposited = new TTree("Tree_deposited","Deposited Information"); 
+    Tree_emitted = new TTree("Tree_emitted","Emitted Information");  //Tree to access energy emitted (except gammas)
+    Tree_gamma = new TTree("Tree_gamma","Gamma Information");  //Tree to access energy emitted by gammas
+    Tree_compton = new TTree("Tree_compton","Compton Information");  //Tree to access energy emitted by gammas
+    Tree_conv = new TTree("Tree_conv","Conversion e- Information");  //Tree to access energy emitted by gammas
+
+    Tree_position = new TTree("Tree_position","Position Information");  //Tree to access position of energy deposition
+    
+   
+    // create the branch for each event.  
+    // Be careful of the data structure here!  /F is a float  /I is an integer
+    RunBranch = theRunTree->Branch("Optical_Information",&Stats.IncidentE,"IncidentE/F:Deposit/F:Generated/I:Absorbed:BulkAbs:Escaped:Failed:Detected_without_CU:Lost:WLS:Detected:FWHM/F:FWHM_Final/F:Frac_Detected/F:Frac_Transmitted/F:Total_Track_Length_e/F:Depth_Max/F:Count_Scintillation/I:Count_Cerenkov/I");
+
+    
+    RunBranch = theRunTree_bis->Branch("Photocathode_Information",&Statsbis.Angle,"Angle/F:PositionX/F:PositionY/F:PositionZ/F:DeathLambda/F:BirthLambda/F:Theta/F:Phi/F");
+
+    RunBranch = theRunTree_ter->Branch("Timing_Information",&Statster.TotTrackLen,"TotTrackLen/F:TimeTransSc/F:TimeEmissionScPTP/F:TimeEmissionScPOPOP/F:TimeEmissionSc/F:TimeTotalSc/F:TimeTransitPMT/F:TimeTotal/F:DeathLambda/F");
+
+    //RunBranch = theRunTree_ter->Branch("Photocathode_Information",&Statsbis.Angle,"Angle/F:PositionX/F:PositionY/F:PositionZ/F:DeathLambda/F:BirthLambda/F:Theta/F:Phi/F");
+    //RunBranch = theRunTree_bis->Branch("PositionX",&Statsbis.PositionX,"PositionX/F");
+    //RunBranch = theRunTree_bis->Branch("PositionY",&Statsbis.PositionY,"PositionY/F");
+    //RunBranch = theRunTree_bis->Branch("PositionZ",&Statsbis.PositionZ,"PositionZ/F");
+    //RunBranch = theRunTree_bis->Branch("DeathLambda",&Statsbis.DeathLambda,"DeathLambda/F");
+    //RunBranch = theRunTree_bis->Branch("BirthLambda",&Statsbis.BirthLambda,"BirthLambda/F");
+    
+
+    //RunBranch = Tree_deposited->Branch("Energy_Deposited",&Statsdeposited.EdepTotal,"E_deposit_Total/F:E_deposit_Total_Corrected/F:E_deposit_Coinc/F:E_deposit_Elec/F:E_deposit_Gamma/F:E_deposit_Gamma_BC_Correction/F:E_depostit_Gamma_Position_Correction/F:E_deposit_Gamma_Corrected/F:E_deposit_Conv/F:E_deposit_Particle_BC_Correction/F:E_deposit_Particle_Position_Correction/F:E_deposit_Particle_Corrected/F:E_deposit_TOTAL_BC_Correction/F:E_deposit_TOTAL_Position_Correction/F:E_deposit_TOTAL_Corrected/F:E_deposit_Alpha/F:E_deposit_Total_FALAISE/F:E_deposit_Total_FALAISE_BC_Corrected/F:E_deposit_Total_FALAISE_Position_Corrected/F:E_deposit_Total_FALAISE_Position_Resolution_Corrected/F:E_deposit_Total_FALAISE_Corrected/F:E_deposit_Total_Optical_Corrected/F:True_Energy_Deposit/F:Position_x/F:Position_y/F:Position_z/F:Number_Interaction/I:Coinc/O");
+    RunBranch = Tree_deposited->Branch("EdepGamma", &Statsdeposited.EdepGamma, "EdepGamma/F" );
+    RunBranch = Tree_deposited->Branch("EdepGammaBCCorrection", &Statsdeposited.EdepGammaBCCorrection, "EdepGammaBCCorrection/F" );
+    RunBranch = Tree_deposited->Branch("EdepGammaPositionCorrection", &Statsdeposited.EdepGammaPositionCorrection, "EdepGammaPositionCorrection/F" );
+    RunBranch = Tree_deposited->Branch("EdepGammaCorrected", &Statsdeposited.EdepGammaCorrected, "EdepGammaCorrected/F" );
+    RunBranch = Tree_deposited->Branch("Energie_Compton", "vector<float>", &Statsdeposited.E_compton );
+    RunBranch = Tree_deposited->Branch("Gamma_Interaction_X", "vector<float>", &Statsdeposited.Gamma_Interaction_X );
+    RunBranch = Tree_deposited->Branch("Gamma_Interaction_Y", "vector<float>", &Statsdeposited.Gamma_Interaction_Y );
+    RunBranch = Tree_deposited->Branch("Gamma_Interaction_Z", "vector<float>", &Statsdeposited.Gamma_Interaction_Z );
+
+    RunBranch = Tree_emitted->Branch("Energy_Emitted",&Statsemitted.E_emitted_Elec,"E_emitted_Elec/F:E_emitted_Alpha/F");
+    RunBranch = Tree_gamma->Branch("Energie_Emitted_Gamma", &Statsgamma.E_emitted_Gamma, "E_emitted_Gamma/F");
+
+
+    RunBranch = Tree_compton->Branch("Energie_Compton_Gamma", &Statscompton.E_Compton, "E_Compton/F");
+
+    RunBranch = Tree_conv->Branch("Energie_Emitted_Conv",&Statsconv.E_emitted_Conv,"E_emitted_Conv/F");
+
+    //RunBranch = Tree_position->Branch("Position_Interaction",&Statsposition.Position_x,"Position_x/F:Position_y/F:Position_z/F");
+
+
+//##################################################################################################################################    
+//#WARNING !!!!! FWHM is the resolution without the cathode uniformity and FWHM_final is the resolution with the cathode uniformity#
+//##################################################################################################################################
+
+
+
+    //set the random seed to the CPU clock
+  //G4Random::setTheEngine(new CLHEP::HepJamesRandom);
+    G4long seed = time(NULL);
+   G4Random::setTheSeed(seed);
+G4cout << "seed = " << seed << G4endl;
+
+/*
+    G4long seed = time(NULL);
+	G4cout << "seed = " << seed << G4endl;
+    //time_t DateTime = time( NULL );
+    CLHEP::HepRandom::setTheSeed(seed);
+    */
+    G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+    
+    if (G4VVisManager::GetConcreteInstance()){
+      G4UImanager* UI = G4UImanager::GetUIpointer();
+      UI->ApplyCommand("/vis/scene/notifyHandlers");
+    } 
+
+
+}  //end BeginOfRunAction
+
+
+//-----------------------------------------------------
+//  EndOfRunAction:  used to calculate the end time and 
+//  to write information to the run tree.  
+//-----------------------------------------------------
+void SN_OpticalSimRunAction::EndOfRunAction(const G4Run*aRun){
+
+    //update the temp root file
+    G4String fileName = suffixe+".root";
+    f = new TFile(fileName,"update");
+    theRunTree->Write();
+    //theRunTree_bis->Write();
+    //theRunTree_ter->Write();
+    Tree_deposited->Write();
+    //Tree_emitted->Write();
+    //Tree_gamma->Write();
+    //Tree_compton->Write();
+    //Tree_conv->Write();
+    //Tree_position->Write();
+    //  MakePMTHisto(f);   NOTE:  Use this for multiple PMTs!
+    f->Close();
+    
+    if (G4VVisManager::GetConcreteInstance()){
+      G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/update");
+    }
+    
+    //display run time and write to file Rntime.out
+    time_t end = time(NULL);
+    G4int elapsed = end-start;
+    G4cout << "Run Completed in " << elapsed/3600
+	   << ":" << (elapsed%3600)/60 << ":"
+	   << ((elapsed%3600)%60) << G4endl;
+
+    // Output the time in the file Runtime.out
+    ofstream timeout;
+    timeout.open("Runtime.out",std::ios::app);
+    timeout << "Run " << aRun->GetRunID()
+	    << ": " <<elapsed/3600
+	    << ":" <<(elapsed%3600)/60
+	    << ":" <<((elapsed%3600)%60) << G4endl;
+    timeout.close();
+    
+      G4cout<<"Leaving Run Action"<<G4endl;
+}
+
+//---------------------------------------------------------
+//  For each event update the statistics in the Run tree
+//---------------------------------------------------------
+
+void SN_OpticalSimRunAction::UpdateStatistics(RunTally aRunTally){
+    Stats = aRunTally;
+    theRunTree->Fill();
+}
+
+
+void SN_OpticalSimRunAction::UpdateStatisticsbis(RunTallybis aRunTallybis){
+    Statsbis = aRunTallybis;
+    theRunTree_bis->Fill();
+}
+
+void SN_OpticalSimRunAction::UpdateStatisticster(RunTallyter aRunTallyter){
+    Statster = aRunTallyter;
+    //theRunTree_ter->Fill();
+}
+
+
+void SN_OpticalSimRunAction::UpdateStatisticsDeposited(RunTallyDeposited aRunTallyDeposited){
+    Statsdeposited = aRunTallyDeposited;
+    Tree_deposited->Fill();
+}
+
+
+void SN_OpticalSimRunAction::UpdateStatisticsEmitted(RunTallyEmitted aRunTallyEmitted){
+    Statsemitted = aRunTallyEmitted;
+    Tree_emitted->Fill();
+}
+
+
+void SN_OpticalSimRunAction::UpdateStatisticsGamma(RunTallyGamma aRunTallyGamma){
+    Statsgamma = aRunTallyGamma;
+    Tree_gamma->Fill();
+
+}
+
+void SN_OpticalSimRunAction::UpdateStatisticsCompton(RunTallyCompton aRunTallyCompton){
+    Statscompton = aRunTallyCompton;
+    Tree_compton->Fill();
+
+}
+
+
+void SN_OpticalSimRunAction::UpdateStatisticsConv(RunTallyConv aRunTallyConv){
+    Statsconv = aRunTallyConv;
+    Tree_conv->Fill();
+}
+
+void SN_OpticalSimRunAction::UpdateStatisticsPosition(RunTallyPosition aRunTallyPosition){
+    Statsposition = aRunTallyPosition;
+    Tree_position->Fill();
+}
+
+
+//---------------------------------------------------------
+// Make the 2D Histogram of hits per PMT
+// Only needed if you are using more than one PMT
+//---------------------------------------------------------
+
+/*
+void SN_OpticalSimRunAction::MakePMTHisto(TFile *f){
+  
+    G4int numkeys = f->GetNkeys();
+    TTree *theTree = (TTree*)f->Get("theRunTree");
+    G4int max = (G4int)theTree->GetMaximum("Detected");
+    if(max < 1) return;
+    TH2I *histo = new TH2I("AllPMTsLego","Hits per PMT per Event",max,0,max,NumPMTs+1,0,NumPMTs+1);
+    
+    G4cout << "The number of PMTs is: " << NumPMTs << G4endl;
+    
+    for (G4int i = 0;i <= numkeys; i++){
+      Tally OnePhoton;
+	char EventName[12];
+	sprintf(EventName,"Event%d",i);
+	theTree = (TTree*)f->Get(EventName);
+	if(!theTree) break;
+	
+	theTree->SetBranchAddress(EventName,&OnePhoton);
+	G4int Sum[20];
+
+	for (G4int j = 0;j <= NumPMTs; j++){
+	    Sum[j] = 0;
+	}
+	
+	G4int numphotons = (G4int)theTree->GetEntries();
+	G4cout << "The Number of photons is " << numphotons << G4endl;
+	for(G4int j = 0;j < numphotons; j++){
+	    theTree->GetEntry(j);
+	    Sum[OnePhoton.PMTnumber]++;
+	}
+	
+	for(G4int j = 0; j <= NumPMTs; j++){
+	    histo->Fill(Sum[j],j);
+	    Sum[j] = 0;
+	}
+    }
+    
+    //  Create the individual PMT histograms if you have more than one PMT
+    
+    for (G4int i = 0; i <= NumPMTs; i++){
+        char histname[20];
+	sprintf(histname,"PMT_%d",i);
+	
+	TH1D *proj = histo->ProjectionX(histname,i+1,i+1);
+	proj->SetTitle("Photoelectrons per Event");
+	proj->Write();
+    }
+    
+    histo->SetFillColor(kGreen);
+    histo->SetOption("Lego1");
+    TAxis *yax = histo->GetYaxis();
+    yax->SetNdivisions(NumPMTs,kTRUE);
+    histo->SetBarWidth(0.15);
+    histo->Write();
+}
+
+
+
+*/
+
+
+
